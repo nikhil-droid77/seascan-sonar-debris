@@ -56,7 +56,7 @@
 
 # 
 
-# Put the dataset in `data/Sonar\_Dataset/` (folders `images/` and `labels/`, plus a `data.yaml` whose `path:` matches your computer).
+# Put the dataset in `data/Sonar_Dataset/` (folders `images/` and `labels/`, plus a `data.yaml` whose `path:` matches your computer).
 
 # 
 
@@ -66,7 +66,7 @@
 
 # ```
 
-# yolo detect train model=yolov8n.pt data=data/Sonar\_Dataset/data.yaml epochs=5 imgsz=416 fraction=0.25 batch=16 workers=0 device=cpu name=baseline
+# yolo detect train model=yolov8n.pt data=data/Sonar_Dataset/data.yaml epochs=5 imgsz=416 fraction=0.25 batch=16 workers=0 device=cpu name=baseline
 
 # ```
 
