@@ -222,3 +222,4 @@ data/
 runs/
 *.pt
 *.onnx
+Sonar_Dataset/

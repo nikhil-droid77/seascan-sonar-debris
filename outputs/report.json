@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "image": "marine_marine-debris-aris3k-994.png",
+    "label": "Shampoo-bottle",
+    "confidence": 0.927,
+    "lat": 15.300351,
+    "lon": 73.800287,
+    "x1": 156,
+    "y1": 190,
+    "x2": 286,
+    "y2": 304
+  },
+  {
+    "id": 2,
+    "image": "marine_marine-debris-aris3k-994.png",
+    "label": "Standing-person",
+    "confidence": 0.375,
+    "lat": 15.300069,
+    "lon": 73.800358,
+    "x1": 317,
+    "y1": 113,
+    "x2": 400,
+    "y2": 214
+  }
+]

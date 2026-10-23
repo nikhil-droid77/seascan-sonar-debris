@@ -1,0 +1,3 @@
+id,image,label,confidence,lat,lon,x1,y1,x2,y2
+1,marine_marine-debris-aris3k-994.png,Shampoo-bottle,0.927,15.300351,73.800287,156,190,286,304
+2,marine_marine-debris-aris3k-994.png,Standing-person,0.375,15.300069,73.800358,317,113,400,214
