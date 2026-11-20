@@ -1,7 +1,17 @@
 path: data
-train: images/augmented_train
-val: images/val
+train: images/stage3_train
+val: images/stage3_val
 
-nc: 1
+nc: 11
 names:
-  0: debris
+  0: Standing-person
+  1: Propeller
+  2: Can
+  3: Tire
+  4: Shampoo-bottle
+  5: Drink-carton
+  6: Chain
+  7: Valve
+  8: Hook
+  9: Mine
+  10: Bottle
