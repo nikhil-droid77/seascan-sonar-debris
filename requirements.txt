@@ -1,5 +1,9 @@
-ultralytics>=8.2
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+flask
+flask-cors
+gunicorn
+ultralytics
 opencv-python-headless
 numpy
-pandas
-pytest

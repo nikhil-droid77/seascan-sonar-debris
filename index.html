@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SEASCAN | Autonomous Sonar Operations Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #04070e;
+      --bg-panel: #090e1a;
+      --bg-card: #0d1424;
+      --border: rgba(255, 255, 255, 0.09);
+      --teal: #3be8c8;
+      --coral: #e57a54;
+      --red: #ff5c5c;
+      --amber: #f5b041;
+      --text-main: #f1f5f9;
+      --text-muted: #8b9bb4;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Top App Navbar */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 36px;
+      background: rgba(4, 7, 14, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-left { display: flex; align-items: center; gap: 36px; }
+    .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      color: #fff;
+      cursor: pointer;
+    }
+    .nav-tabs { display: flex; gap: 24px; }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 6px 2px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+    }
+    .nav-tab:hover { color: #fff; }
+    .nav-tab.active { color: #fff; border-bottom-color: var(--coral); }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1.2px;
+      color: var(--text-main);
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 10px var(--teal);
+    }
+
+    /* Page Views */
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    /* ================= HOME VIEW ================= */
+    .hero {
+      min-height: 88vh;
+      display: flex;
+      align-items: center;
+      padding: 80px 10%;
+      background:
+        linear-gradient(90deg, rgba(4, 7, 14, 0.9) 0%, rgba(4, 7, 14, 0.45) 55%, rgba(4, 7, 14, 0.85) 100%),
+        linear-gradient(180deg, rgba(4, 7, 14, 0.2) 70%, var(--bg-deep) 100%),
+        url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+    }
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--coral);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.6rem, 4.5vw, 4.2rem);
+      line-height: 1.12;
+      margin: 0 0 20px;
+    }
+    .hero h1 span { font-style: italic; color: var(--teal); display: block; }
+    .hero p { color: #cbd5e1; font-size: 1.05rem; line-height: 1.65; max-width: 540px; margin-bottom: 32px; }
+    .hero-btns { display: flex; gap: 14px; }
+    .btn-teal {
+      background: var(--teal); color: #041412; border: none; border-radius: 999px;
+      padding: 13px 28px; font-weight: 700; font-size: 0.92rem; cursor: pointer;
+    }
+    .btn-outline {
+      background: rgba(255,255,255,0.04); color: #fff; border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px; padding: 13px 26px; font-size: 0.92rem; cursor: pointer;
+    }
+
+    .problem-sec {
+      padding: 90px 10%;
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .problem-sec img { width: 100%; height: 450px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+    .problem-sec h2 { font-family: 'Playfair Display', serif; font-size: 2.5rem; line-height: 1.22; margin: 10px 0 20px; }
+
+    .cta-banner {
+      background: linear-gradient(120deg, #f3954f 0%, #f8c697 100%);
+      color: #090e1a;
+      text-align: center;
+      padding: 90px 20px;
+    }
+    .cta-banner h2 { font-family: 'Playfair Display', serif; font-size: 2.8rem; margin: 0 0 12px; }
+    .cta-banner p { font-size: 1.02rem; max-width: 480px; margin: 0 auto 28px; color: #1e293b; }
+    .btn-dark {
+      background: #060a12; color: #fff; border: none; border-radius: 999px;
+      padding: 14px 30px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
+    }
+
+    /* ================= TECHNOLOGY VIEW ================= */
+    .tech-wrap { padding: 60px 10% 100px; }
+    .tech-wrap h1 { font-family: 'Playfair Display', serif; font-size: 3rem; margin: 8px 0 14px; }
+    .tech-wrap h1 span { font-style: italic; color: var(--teal); }
+    .diagram-box {
+      background: linear-gradient(180deg, #1b2838 0%, #07131f 100%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin: 34px 0 70px;
+    }
+    .sonar101-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 48px;
+      align-items: center;
+      margin-bottom: 80px;
+    }
+    .step-item { display: flex; gap: 18px; margin-bottom: 28px; }
+    .step-num { font-family: 'Playfair Display', serif; color: var(--coral); font-size: 1.35rem; font-weight: 700; }
+    .cards-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 28px; }
+    .tech-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 26px;
+    }
+    .tech-card .highlight { font-family: 'Playfair Display', serif; color: var(--coral); font-size: 1.7rem; font-weight: 700; margin: 8px 0 14px; }
+
+    /* ================= DASHBOARD OPERATIONS CONSOLE ================= */
+    .console-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 24px;
+      background: #060a13;
+      border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+    .console-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr 310px;
+      min-height: calc(100vh - 98px);
+    }
+    .col-left, .col-right {
+      background: var(--bg-panel);
+      padding: 18px;
+      border-right: 1px solid var(--border);
+    }
+    .col-right { border-right: none; border-left: 1px solid var(--border); }
+    .col-center { background: #050811; padding: 18px; display: flex; flex-direction: column; }
+
+    .panel-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .upload-box {
+      margin-top: 14px;
+      border: 1px dashed rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 14px;
+      background: #060a13;
+    }
+    .btn-row { display: grid; grid-template-columns: 1.3fr 1fr; gap: 8px; margin-top: 12px; }
+    .btn-run {
+      background: #38bdf8; color: #041019; border: none; border-radius: 6px;
+      padding: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer;
+    }
+    .btn-run:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-demo {
+      background: #162033; color: #fff; border: 1px solid var(--border);
+      border-radius: 6px; padding: 10px; font-size: 0.8rem; cursor: pointer;
+    }
+    .btn-demo:hover { border-color: var(--teal); }
+
+    /* Waterfall Display */
+    .waterfall-frame {
+      position: relative;
+      background: #020408;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .waterfall-frame img { max-width: 100%; max-height: 410px; display: block; }
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(59, 232, 200, 0.14) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(59, 232, 200, 0.14) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      display: none;
+    }
+
+    .det-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; margin-top: 12px; }
+    .det-table th, .det-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+    .det-table tr { cursor: pointer; }
+    .det-table tbody tr:hover { background: rgba(59, 232, 200, 0.08); }
+
+    .tag-crit { color: var(--red); font-weight: 700; }
+    .tag-warn { color: var(--amber); font-weight: 700; }
+    .tag-rev { color: var(--teal); font-weight: 700; }
+
+    /* Survey Map Canvas */
+    .survey-map-box {
+      position: relative;
+      height: 230px;
+      background: radial-gradient(circle at center, #0d1d30 0%, #050a14 100%);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .map-pin {
+      position: absolute;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    /* Floating SEASCAN AI */
+    .ai-fab {
+      position: fixed;
+      bottom: 22px;
+      right: 24px;
+      z-index: 1200;
+      background: var(--teal);
+      color: #031512;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 20px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(59, 232, 200, 0.35);
+    }
+    .ai-drawer {
+      position: fixed;
+      bottom: 76px;
+      right: 24px;
+      width: 350px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      z-index: 1200;
+      display: none;
+    }
+
+    @media (max-width: 1024px) {
+      .console-grid, .problem-sec, .sonar101-grid, .cards-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Bar -->
+  <nav>
+    <div class="nav-left">
+      <div class="brand" onclick="switchTab('home')">SEASCAN</div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-tab="home" onclick="switchTab('home')">Home</button>
+        <button class="nav-tab" data-tab="technology" onclick="switchTab('technology')">Technology</button>
+        <button class="nav-tab" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="nav-tab" data-tab="analytics" onclick="switchTab('analytics')">Analytics</button>
+        <button class="nav-tab" data-tab="map" onclick="switchTab('map')">Map</button>
+      </div>
+    </div>
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span>SYSTEM ONLINE</span>
+    </div>
+  </nav>
+
+  <!-- ==================== 1. HOME TAB ==================== -->
+  <section id="view-home" class="view-section active">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">AUTONOMOUS ACOUSTIC SONAR INTELLIGENCE</div>
+        <h1>The Ocean Has a Secret. <span>We Built a Way to Find It.</span></h1>
+        <p>SEASCAN uses AI and side-scan sonar to locate ghost nets, shipwrecks, and marine debris — before they destroy more life.</p>
+        <div class="hero-btns">
+          <button class="btn-teal" onclick="switchTab('dashboard')">Launch Dashboard &rarr;</button>
+          <button class="btn-outline" onclick="switchTab('technology')">See How It Works</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="problem-sec">
+      <img src="https://images.unsplash.com/photo-1621451537084-482c73073a0f?auto=format&fit=crop&w=900&q=80" alt="Ghost Net Underwater" />
+      <div>
+        <div class="eyebrow">THE PROBLEM</div>
+        <h2>&ldquo;640,000 tons of fishing gear are lost in our oceans every year. It keeps killing for decades.</h2>
+        <p style="color:var(--text-muted); line-height:1.75;">
+          Ghost nets drift and settle on the seabed, out of sight. Finding them means survey vessels towing sonar for days, and experts reading hours of grainy, grey images by hand. Most of what is down there is simply never seen.
+        </p>
+      </div>
+    </div>
+
+    <div class="cta-banner">
+      <h2>Ready to see what's really down there?</h2>
+      <p>Explore the live demo survey, or drop in your own side-scan sonar image to map debris in real time.</p>
+      <button class="btn-dark" onclick="switchTab('dashboard')">Open SEASCAN Dashboard &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ==================== 2. TECHNOLOGY TAB ==================== -->
+  <section id="view-technology" class="view-section">
+    <div class="tech-wrap">
+      <div class="eyebrow">THE TECHNOLOGY</div>
+      <h1>Seeing the seafloor <span>with sound.</span></h1>
+      <p style="color:var(--text-muted); max-width:620px; line-height:1.65;">
+        Light fades within a few metres underwater. Sound travels for hundreds. Side-scan sonar turns those echoes into a photograph-like picture of the seabed, and SEASCAN teaches a computer to read it.
+      </p>
+
+      <!-- Custom Towfish Acoustic Diagram -->
+      <div class="diagram-box">
+        <svg viewBox="0 0 900 280" width="100%" height="260">
+          <line x1="0" y1="70" x2="900" y2="70" stroke="#38bdf8" stroke-opacity="0.3" stroke-width="2" />
+          <!-- Survey Vessel -->
+          <rect x="130" y="42" width="110" height="28" rx="4" fill="#f8fafc" />
+          <rect x="175" y="25" width="35" height="17" fill="#e57a54" />
+          <!-- Tow Cable -->
+          <line x1="240" y1="68" x2="430" y2="145" stroke="#cbd5e1" stroke-dasharray="5,5" stroke-width="2" />
+          <!-- Towfish -->
+          <ellipse cx="445" cy="148" rx="22" ry="7" fill="#f8fafc" />
+          <text x="425" y="130" fill="#cbd5e1" font-size="12" font-family="Inter">Towfish</text>
+          <!-- Acoustic Swath Cones -->
+          <polygon points="445,155 180,275 415,275" fill="rgba(59, 232, 200, 0.16)" />
+          <polygon points="445,155 475,275 740,275" fill="rgba(59, 232, 200, 0.16)" />
+          <text x="260" y="195" fill="#94a3b8" font-size="12">Acoustic swath</text>
+          <text x="560" y="195" fill="#94a3b8" font-size="12">Acoustic swath</text>
+          <!-- Seabed Targets -->
+          <text x="275" y="245" fill="#3be8c8" font-size="12">Ghost net</text>
+          <rect x="615" y="242" width="55" height="28" fill="#d97706" rx="3" />
+          <text x="610" y="232" fill="#f59e0b" font-size="12">Wreck echo</text>
+        </svg>
+      </div>
+
+      <!-- Sonar 101 -->
+      <div class="sonar101-grid">
+        <div>
+          <h2 style="font-family:'Playfair Display',serif; font-size:2.2rem; margin-bottom:28px;">Sonar 101</h2>
+          <div class="step-item">
+            <div class="step-num">01</div>
+            <div>
+              <strong>Pings</strong>
+              <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">The towfish fires a thin fan of sound to each side, hundreds of times a minute. Each echo is written as one line of the image, stacking up like a waterfall.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">02</div>
+            <div>
+              <strong>Acoustic shadows</strong>
+              <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">Anything standing off the seabed blocks sound behind it, casting a dark directional shadow. Shadow length reveals object height and filters false alarms.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">03</div>
+            <div>
+              <strong>Reflectivity</strong>
+              <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">Hard, rough surfaces (steel hulls, mines, tangled gear) send back strong bright echoes, while soft mud absorbs sound and appears dark.</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <img src="https://images.unsplash.com/photo-1551244072-5d12893278ab?auto=format&fit=crop&w=900&q=80" alt="Acoustic Seabed" style="width:100%; border-radius:12px; border:1px solid var(--border);" />
+        </div>
+      </div>
+
+      <!-- The AI That Reads It -->
+      <h2 style="font-family:'Playfair Display',serif; font-size:2.2rem;">The AI that reads it</h2>
+      <div class="cards-3">
+        <div class="tech-card">
+          <div style="font-weight:600;">Cleaning the signal</div>
+          <div class="highlight">Lee + CLAHE</div>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">Smooths multiplicative acoustic speckle noise and boosts local contrast so faint far-range echoes become readable without washing out near-field returns.</p>
+        </div>
+        <div class="tech-card">
+          <div style="font-weight:600;">YOLOv8 detection</div>
+          <div class="highlight">mAP@50 0.954</div>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">A fine-tuned YOLOv8n detector locates shipwrecks, mines, ghost gear, and submerged debris in a single pass with bounding-box precision.</p>
+        </div>
+        <div class="tech-card">
+          <div style="font-weight:600;">Built for the edge</div>
+          <div class="highlight">&approx; 18 ms &bull; 6 MB</div>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">Lightweight enough to run offline on survey laptops or an AUV's onboard computer while the seabed survey is still underway.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 3. OPERATIONS CONSOLE (DASHBOARD) ==================== -->
+  <section id="view-dashboard" class="view-section">
+    <div class="console-topbar">
+      <div>OPERATIONS CONSOLE &nbsp;|&nbsp; SCAN <strong id="jobId" style="color:#fff;">JOB-READY</strong></div>
+      <div style="color:var(--teal);">&#9679; PIPELINE READY</div>
+      <div>
+        Export:
+        <button onclick="exportData('json')" style="background:#141e30;color:#fff;border:1px solid var(--border);padding:3px 9px;border-radius:4px;cursor:pointer;margin-left:6px;">JSON</button>
+        <button onclick="exportData('csv')" style="background:#141e30;color:#fff;border:1px solid var(--border);padding:3px 9px;border-radius:4px;cursor:pointer;margin-left:4px;">CSV</button>
+      </div>
+    </div>
+
+    <div class="console-grid">
+      <!-- Left Sidebar -->
+      <div class="col-left">
+        <div class="panel-title">SCAN TELEMETRY</div>
+        <div class="meta-row"><span>Source</span><span id="metaSource" style="color:#fff;">—</span></div>
+        <div class="meta-row"><span>Waterfall</span><span id="metaRes" style="color:#fff;">—</span></div>
+        <div class="meta-row"><span>Altitude</span><span style="color:#fff;">10 m</span></div>
+
+        <div class="upload-box">
+          <div style="font-size:0.78rem; font-weight:600; margin-bottom:4px;">Import sonar scan</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:10px;">PNG/JPG side-scan waterfall</div>
+          <input type="file" id="fileInput" accept="image/*" style="width:100%; font-size:0.75rem; color:var(--text-muted);" />
+          <div class="btn-row">
+            <button class="btn-run" id="runBtn" onclick="runDetection()" disabled>&#9655; Run detection</button>
+            <button class="btn-demo" onclick="loadDemoScan()">Load demo</button>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="panel-title">DETECTION CONTROLS</div>
+          <div class="meta-row"><span>Confidence threshold</span><span id="confLabel" style="color:var(--teal);">30%</span></div>
+          <input type="range" id="confSlider" min="10" max="90" value="30" style="width:100%; margin-top:8px;" oninput="document.getElementById('confLabel').textContent=this.value+'%'" />
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="panel-title">SCAN HISTORY</div>
+          <div id="historyList" style="font-family:'JetBrains Mono',monospace; font-size:0.74rem; color:var(--text-muted);">No scans run yet.</div>
+        </div>
+      </div>
+
+      <!-- Center Waterfall & Detections Table -->
+      <div class="col-center">
+        <div class="panel-title">
+          <span>SONAR DISPLAY &bull; PORT &larr; &bull; &rarr; STBD &bull; SWATH 100 m</span>
+          <div>
+            <button onclick="toggleGrid()" style="background:#141e30;color:#fff;border:1px solid var(--border);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:0.72rem;"># Grid</button>
+            <button onclick="toggleLabels()" style="background:#141e30;color:#fff;border:1px solid var(--border);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:0.72rem;margin-left:4px;">Labels</button>
+          </div>
+        </div>
+
+        <div class="waterfall-frame">
+          <span id="waterfallPlaceholder" style="color:var(--text-muted); font-size:0.88rem;">Click <strong>Load demo</strong> on the left or upload a sonar image to begin</span>
+          <img id="waterfallImg" src="" style="display:none;" />
+          <div class="grid-overlay" id="gridOverlay"></div>
+        </div>
+
+        <div style="margin-top:18px;">
+          <div class="panel-title">
+            <span>DETECTIONS (<span id="detCount">0</span> SHOWN)</span>
+            <span style="font-size:0.7rem;">Click any row to inspect target</span>
+          </div>
+          <table class="det-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>TYPE</th><th>RANGE (m)</th><th>ALONG-TRACK (m)</th><th>SIZE L&times;W (m)</th><th>CONF. (%)</th><th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="detTableBody">
+              <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">Awaiting sonar scan...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right Inspector & Mini Survey Map -->
+      <div class="col-right">
+        <div class="panel-title">OBJECT DETAIL</div>
+        <div id="objectDetailBox" style="background:#060a13; border:1px solid var(--border); border-radius:8px; padding:14px; font-size:0.8rem; color:var(--text-muted); min-height:140px;">
+          Select an object on the detections table to inspect coordinates and bounding box telemetry.
+        </div>
+
+        <div class="panel-title" style="margin-top:22px;">SURVEY MAP</div>
+        <div class="survey-map-box" id="miniMap">
+          <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size:30px 30px;"></div>
+          <div id="mapPinsContainer"></div>
+          <div style="position:absolute; bottom:8px; left:10px; font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:var(--text-muted);">13.0827°N, 80.2707°E</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 4. ANALYTICS TAB ==================== -->
+  <section id="view-analytics" class="view-section">
+    <div style="padding:50px 10%;">
+      <div class="eyebrow">MISSION TELEMETRY &amp; BREAKDOWN</div>
+      <h2 style="font-family:'Playfair Display',serif; font-size:2.4rem;">Acoustic Detection Analytics</h2>
+      <div id="analyticsContent" style="background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; padding:28px; margin-top:24px;">
+        Run a scan or click <strong>Load demo</strong> in the Dashboard tab to populate live class frequency and confidence distributions.
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 5. MAP TAB ==================== -->
+  <section id="view-map" class="view-section">
+    <div style="padding:50px 10%;">
+      <div class="eyebrow">GEOSPATIAL RECOVERY PLOT</div>
+      <h2 style="font-family:'Playfair Display',serif; font-size:2.4rem;">Geotagged Seabed Targets</h2>
+      <div id="fullMapContent" style="background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; padding:28px; margin-top:24px;">
+        No geotagged coordinates logged yet. Load a scan in the Dashboard to plot recovery waypoints.
+      </div>
+    </div>
+  </section>
+
+  <!-- Floating Ask SEASCAN AI -->
+  <button class="ai-fab" onclick="toggleAi()">💬 Ask SEASCAN AI</button>
+  <div class="ai-drawer" id="aiDrawer">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <strong style="color:var(--teal); font-size:0.9rem;">SEASCAN AI Copilot</strong>
+      <button onclick="toggleAi()" style="background:none; border:none; color:#94a3b8; cursor:pointer;">&times;</button>
+    </div>
+    <p id="aiReply" style="font-size:0.82rem; color:#cbd5e1; line-height:1.5; margin:0 0 10px;">
+      Ready to assist! Click <strong>Load demo</strong> in the Dashboard to analyze a live sonar swath, then ask me to summarize targets.
+    </p>
+    <button class="btn-teal" style="width:100%; padding:8px; font-size:0.8rem;" onclick="summarizeCurrent()">Summarize Active Scan</button>
+  </div>
+
+  <script>
+    let currentData = null;
+    let showLabels = true;
+    let selectedFile = null;
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-' + tabName).classList.add('active');
+      const btn = document.querySelector(`.nav-tab[data-tab="${tabName}"]`);
+      if (btn) btn.classList.add('active');
+    }
+
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      if (e.target.files.length) {
+        selectedFile = e.target.files[0];
+        document.getElementById('metaSource').textContent = selectedFile.name;
+        document.getElementById('runBtn').disabled = false;
+      }
+    });
+
+    async function runDetection() {
+      if (!selectedFile) return;
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      formData.append('conf', document.getElementById('confSlider').value / 100);
+      const res = await fetch('/detect', { method: 'POST', body: formData });
+      const data = await res.json();
+      applyScanResult(data);
+    }
+
+    async function loadDemoScan() {
+      const formData = new FormData();
+      formData.append('conf', document.getElementById('confSlider').value / 100);
+      const res = await fetch('/demo-scan', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      applyScanResult(data);
+    }
+
+    function applyScanResult(data) {
+      currentData = data;
+      document.getElementById('jobId').textContent = 'JOB-' + Math.random().toString(16).substring(2, 8).toUpperCase();
+      document.getElementById('metaSource').textContent = data.filename;
+      document.getElementById('metaRes').textContent = data.resolution;
+
+      const img = document.getElementById('waterfallImg');
+      img.src = showLabels ? data.annotated_image : data.original_image;
+      img.style.display = 'block';
+      document.getElementById('waterfallPlaceholder').style.display = 'none';
+
+      const dets = data.detections;
+      document.getElementById('detCount').textContent = dets.length;
+
+      // Update Table
+      const tbody = document.getElementById('detTableBody');
+      if (!dets.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:18px;">No targets above threshold.</td></tr>';
+      } else {
+        tbody.innerHTML = dets.map((d, i) => {
+          const cls = d.status === 'CRITICAL' ? 'tag-crit' : (d.status === 'WARNING' ? 'tag-warn' : 'tag-rev');
+          return `<tr onclick="inspectObject(${i})">
+            <td>${d.id}</td>
+            <td style="color:#fff;font-weight:600;">${d.type}</td>
+            <td>${d.range}</td>
+            <td>${d.along_track}</td>
+            <td>${d.size}</td>
+            <td>${d.confidence}</td>
+            <td class="${cls}">&#9632; ${d.status}</td>
+          </tr>`;
+        }).join('');
+        inspectObject(0);
+      }
+
+      // Add to Scan History
+      const hist = document.getElementById('historyList');
+      hist.innerHTML = `<div style="padding:6px 0; border-bottom:1px solid var(--border); color:#fff;">${data.filename} &mdash; <span style="color:var(--teal);">${dets.length} obj</span></div>` + hist.innerHTML;
+
+      // Plot Mini Map Pins
+      const pins = document.getElementById('mapPinsContainer');
+      pins.innerHTML = dets.map(d => {
+        const left = 15 + ((d.lon - 80.268) / 0.006) * 70;
+        const top = 15 + ((d.lat - 13.080) / 0.006) * 70;
+        const color = d.status === 'CRITICAL' ? '#ff5c5c' : (d.status === 'WARNING' ? '#f5b041' : '#3be8c8');
+        return `<div class="map-pin" title="${d.id}: ${d.type}" style="left:${Math.min(90,Math.max(10,left))}%; top:${Math.min(85,Math.max(15,top))}%; background:${color}; color:${color};"></div>`;
+      }).join('');
+
+      // Update Analytics & Full Map Tabs
+      document.getElementById('analyticsContent').innerHTML = `
+        <h3 style="margin-top:0;">Active Scan Summary: ${data.filename}</h3>
+        <p>Total Targets Detected: <strong>${dets.length}</strong></p>
+        <ul>${dets.map(d => `<li><strong>${d.id} (${d.type})</strong> — Confidence: ${d.confidence}% | Status: ${d.status}</li>`).join('')}</ul>
+      `;
+      document.getElementById('fullMapContent').innerHTML = `
+        <h3 style="margin-top:0;">Recovery Coordinates (${data.filename})</h3>
+        <ul>${dets.map(d => `<li><strong>${d.id} — ${d.type}</strong>: Lat <code>${d.lat}</code>, Lon <code>${d.lon}</code> (${d.status})</li>`).join('')}</ul>
+      `;
+    }
+
+    function inspectObject(idx) {
+      if (!currentData || !currentData.detections[idx]) return;
+      const d = currentData.detections[idx];
+      document.getElementById('objectDetailBox').innerHTML = `
+        <div style="color:#fff; font-weight:700; font-size:0.95rem; margin-bottom:8px;">${d.id} &mdash; ${d.type}</div>
+        <div class="meta-row"><span>Status</span><span style="color:var(--teal);">${d.status}</span></div>
+        <div class="meta-row"><span>Confidence</span><span>${d.confidence}%</span></div>
+        <div class="meta-row"><span>Latitude</span><span>${d.lat}°N</span></div>
+        <div class="meta-row"><span>Longitude</span><span>${d.lon}°E</span></div>
+        <div class="meta-row"><span>Est. Size</span><span>${d.size} m</span></div>
+      `;
+    }
+
+    function toggleGrid() {
+      const g = document.getElementById('gridOverlay');
+      g.style.display = g.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleLabels() {
+      if (!currentData) return;
+      showLabels = !showLabels;
+      document.getElementById('waterfallImg').src = showLabels ? currentData.annotated_image : currentData.original_image;
+    }
+
+    function exportData(fmt) {
+      if (!currentData || !currentData.detections.length) return;
+      let content = '', mime = '', ext = '';
+      if (fmt === 'json') {
+        content = JSON.stringify(currentData.detections, null, 2);
+        mime = 'application/json'; ext = 'json';
+      } else {
+        const rows = ['ID,Type,Range,AlongTrack,Size,Confidence,Status,Lat,Lon']
+          .concat(currentData.detections.map(d => `${d.id},${d.type},"${d.range}",${d.along_track},${d.size},${d.confidence},${d.status},${d.lat},${d.lon}`));
+        content = rows.join('\n');
+        mime = 'text/csv'; ext = 'csv';
+      }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+      a.download = `seascan_report.${ext}`;
+      a.click();
+    }
+
+    function toggleAi() {
+      const d = document.getElementById('aiDrawer');
+      d.style.display = d.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function summarizeCurrent() {
+      const reply = document.getElementById('aiReply');
+      if (!currentData || !currentData.detections.length) {
+        reply.innerHTML = 'No active scan loaded yet. Click <strong>Load demo</strong> in the Dashboard first!';
+        return;
+      }
+      const list = currentData.detections.map(d => `${d.id} (${d.type}, ${d.confidence}%)`).join(', ');
+      reply.innerHTML = `Detected <strong>${currentData.detections.length}</strong> targets in <code>${currentData.filename}</code>: ${list}.`;
+    }
+  </script>
+</body>
+</html>
