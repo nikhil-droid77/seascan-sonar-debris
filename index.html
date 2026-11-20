@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
   <style>
     :root {
       --bg-deep: #04070e;
@@ -29,7 +30,6 @@
       font-family: 'Inter', sans-serif;
     }
 
-    /* Top App Navbar */
     nav {
       position: sticky;
       top: 0;
@@ -78,15 +78,14 @@
     .status-dot {
       width: 8px; height: 8px;
       border-radius: 50%;
-      background: var(--teal);
-      box-shadow: 0 0 10px var(--teal);
+      background: var(--amber);
+      box-shadow: 0 0 10px var(--amber);
     }
 
-    /* Page Views */
     .view-section { display: none; }
     .view-section.active { display: block; }
 
-    /* ================= HOME VIEW ================= */
+    /* HOME VIEW */
     .hero {
       min-height: 88vh;
       display: flex;
@@ -147,7 +146,7 @@
       padding: 14px 30px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
     }
 
-    /* ================= TECHNOLOGY VIEW ================= */
+    /* TECHNOLOGY VIEW */
     .tech-wrap { padding: 60px 10% 100px; }
     .tech-wrap h1 { font-family: 'Playfair Display', serif; font-size: 3rem; margin: 8px 0 14px; }
     .tech-wrap h1 span { font-style: italic; color: var(--teal); }
@@ -176,7 +175,7 @@
     }
     .tech-card .highlight { font-family: 'Playfair Display', serif; color: var(--coral); font-size: 1.7rem; font-weight: 700; margin: 8px 0 14px; }
 
-    /* ================= DASHBOARD OPERATIONS CONSOLE ================= */
+    /* DASHBOARD OPERATIONS CONSOLE */
     .console-topbar {
       display: flex;
       justify-content: space-between;
@@ -239,7 +238,6 @@
     }
     .btn-demo:hover { border-color: var(--teal); }
 
-    /* Waterfall Display */
     .waterfall-frame {
       position: relative;
       background: #020408;
@@ -251,7 +249,7 @@
       justify-content: center;
       overflow: hidden;
     }
-    .waterfall-frame img { max-width: 100%; max-height: 410px; display: block; }
+    .waterfall-frame canvas { max-width: 100%; max-height: 410px; display: none; }
     .grid-overlay {
       position: absolute;
       inset: 0;
@@ -272,7 +270,6 @@
     .tag-warn { color: var(--amber); font-weight: 700; }
     .tag-rev { color: var(--teal); font-weight: 700; }
 
-    /* Survey Map Canvas */
     .survey-map-box {
       position: relative;
       height: 230px;
@@ -290,7 +287,6 @@
       box-shadow: 0 0 10px currentColor;
     }
 
-    /* Floating SEASCAN AI */
     .ai-fab {
       position: fixed;
       bottom: 22px;
@@ -326,7 +322,6 @@
 </head>
 <body>
 
-  <!-- Top App Bar -->
   <nav>
     <div class="nav-left">
       <div class="brand" onclick="switchTab('home')">SEASCAN</div>
@@ -339,12 +334,12 @@
       </div>
     </div>
     <div class="status-pill">
-      <span class="status-dot"></span>
-      <span>SYSTEM ONLINE</span>
+      <span class="status-dot" id="modelDot"></span>
+      <span id="modelStatus">LOADING ONNX ENGINE...</span>
     </div>
   </nav>
 
-  <!-- ==================== 1. HOME TAB ==================== -->
+  <!-- 1. HOME TAB -->
   <section id="view-home" class="view-section active">
     <div class="hero">
       <div>
@@ -376,7 +371,7 @@
     </div>
   </section>
 
-  <!-- ==================== 2. TECHNOLOGY TAB ==================== -->
+  <!-- 2. TECHNOLOGY TAB -->
   <section id="view-technology" class="view-section">
     <div class="tech-wrap">
       <div class="eyebrow">THE TECHNOLOGY</div>
@@ -385,31 +380,24 @@
         Light fades within a few metres underwater. Sound travels for hundreds. Side-scan sonar turns those echoes into a photograph-like picture of the seabed, and SEASCAN teaches a computer to read it.
       </p>
 
-      <!-- Custom Towfish Acoustic Diagram -->
       <div class="diagram-box">
         <svg viewBox="0 0 900 280" width="100%" height="260">
           <line x1="0" y1="70" x2="900" y2="70" stroke="#38bdf8" stroke-opacity="0.3" stroke-width="2" />
-          <!-- Survey Vessel -->
           <rect x="130" y="42" width="110" height="28" rx="4" fill="#f8fafc" />
           <rect x="175" y="25" width="35" height="17" fill="#e57a54" />
-          <!-- Tow Cable -->
           <line x1="240" y1="68" x2="430" y2="145" stroke="#cbd5e1" stroke-dasharray="5,5" stroke-width="2" />
-          <!-- Towfish -->
           <ellipse cx="445" cy="148" rx="22" ry="7" fill="#f8fafc" />
           <text x="425" y="130" fill="#cbd5e1" font-size="12" font-family="Inter">Towfish</text>
-          <!-- Acoustic Swath Cones -->
           <polygon points="445,155 180,275 415,275" fill="rgba(59, 232, 200, 0.16)" />
           <polygon points="445,155 475,275 740,275" fill="rgba(59, 232, 200, 0.16)" />
           <text x="260" y="195" fill="#94a3b8" font-size="12">Acoustic swath</text>
           <text x="560" y="195" fill="#94a3b8" font-size="12">Acoustic swath</text>
-          <!-- Seabed Targets -->
           <text x="275" y="245" fill="#3be8c8" font-size="12">Ghost net</text>
           <rect x="615" y="242" width="55" height="28" fill="#d97706" rx="3" />
           <text x="610" y="232" fill="#f59e0b" font-size="12">Wreck echo</text>
         </svg>
       </div>
 
-      <!-- Sonar 101 -->
       <div class="sonar101-grid">
         <div>
           <h2 style="font-family:'Playfair Display',serif; font-size:2.2rem; margin-bottom:28px;">Sonar 101</h2>
@@ -440,7 +428,6 @@
         </div>
       </div>
 
-      <!-- The AI That Reads It -->
       <h2 style="font-family:'Playfair Display',serif; font-size:2.2rem;">The AI that reads it</h2>
       <div class="cards-3">
         <div class="tech-card">
@@ -455,18 +442,18 @@
         </div>
         <div class="tech-card">
           <div style="font-weight:600;">Built for the edge</div>
-          <div class="highlight">&approx; 18 ms &bull; 6 MB</div>
-          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">Lightweight enough to run offline on survey laptops or an AUV's onboard computer while the seabed survey is still underway.</p>
+          <div class="highlight">&approx; 18 ms &bull; 12 MB</div>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">Exported to ONNX Runtime Web—runs directly on edge browsers or an AUV's onboard computer with zero cloud latency.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ==================== 3. OPERATIONS CONSOLE (DASHBOARD) ==================== -->
+  <!-- 3. OPERATIONS CONSOLE (DASHBOARD) -->
   <section id="view-dashboard" class="view-section">
     <div class="console-topbar">
       <div>OPERATIONS CONSOLE &nbsp;|&nbsp; SCAN <strong id="jobId" style="color:#fff;">JOB-READY</strong></div>
-      <div style="color:var(--teal);">&#9679; PIPELINE READY</div>
+      <div style="color:var(--teal);">&#9679; ONNX EDGE PIPELINE</div>
       <div>
         Export:
         <button onclick="exportData('json')" style="background:#141e30;color:#fff;border:1px solid var(--border);padding:3px 9px;border-radius:4px;cursor:pointer;margin-left:6px;">JSON</button>
@@ -475,7 +462,6 @@
     </div>
 
     <div class="console-grid">
-      <!-- Left Sidebar -->
       <div class="col-left">
         <div class="panel-title">SCAN TELEMETRY</div>
         <div class="meta-row"><span>Source</span><span id="metaSource" style="color:#fff;">—</span></div>
@@ -487,7 +473,7 @@
           <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:10px;">PNG/JPG side-scan waterfall</div>
           <input type="file" id="fileInput" accept="image/*" style="width:100%; font-size:0.75rem; color:var(--text-muted);" />
           <div class="btn-row">
-            <button class="btn-run" id="runBtn" onclick="runDetection()" disabled>&#9655; Run detection</button>
+            <button class="btn-run" id="runBtn" onclick="runUploadedScan()" disabled>&#9655; Run detection</button>
             <button class="btn-demo" onclick="loadDemoScan()">Load demo</button>
           </div>
         </div>
@@ -504,7 +490,6 @@
         </div>
       </div>
 
-      <!-- Center Waterfall & Detections Table -->
       <div class="col-center">
         <div class="panel-title">
           <span>SONAR DISPLAY &bull; PORT &larr; &bull; &rarr; STBD &bull; SWATH 100 m</span>
@@ -516,7 +501,7 @@
 
         <div class="waterfall-frame">
           <span id="waterfallPlaceholder" style="color:var(--text-muted); font-size:0.88rem;">Click <strong>Load demo</strong> on the left or upload a sonar image to begin</span>
-          <img id="waterfallImg" src="" style="display:none;" />
+          <canvas id="sonarCanvas"></canvas>
           <div class="grid-overlay" id="gridOverlay"></div>
         </div>
 
@@ -538,7 +523,6 @@
         </div>
       </div>
 
-      <!-- Right Inspector & Mini Survey Map -->
       <div class="col-right">
         <div class="panel-title">OBJECT DETAIL</div>
         <div id="objectDetailBox" style="background:#060a13; border:1px solid var(--border); border-radius:8px; padding:14px; font-size:0.8rem; color:var(--text-muted); min-height:140px;">
@@ -555,7 +539,7 @@
     </div>
   </section>
 
-  <!-- ==================== 4. ANALYTICS TAB ==================== -->
+  <!-- 4. ANALYTICS TAB -->
   <section id="view-analytics" class="view-section">
     <div style="padding:50px 10%;">
       <div class="eyebrow">MISSION TELEMETRY &amp; BREAKDOWN</div>
@@ -566,7 +550,7 @@
     </div>
   </section>
 
-  <!-- ==================== 5. MAP TAB ==================== -->
+  <!-- 5. MAP TAB -->
   <section id="view-map" class="view-section">
     <div style="padding:50px 10%;">
       <div class="eyebrow">GEOSPATIAL RECOVERY PLOT</div>
@@ -577,7 +561,6 @@
     </div>
   </section>
 
-  <!-- Floating Ask SEASCAN AI -->
   <button class="ai-fab" onclick="toggleAi()">💬 Ask SEASCAN AI</button>
   <div class="ai-drawer" id="aiDrawer">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -591,9 +574,32 @@
   </div>
 
   <script>
+    const CLASSES = ['Standing-person', 'Propeller', 'Can', 'Tire', 'Shampoo-bottle', 'Drink-carton', 'Chain', 'Valve', 'Hook', 'Mine', 'Bottle'];
+    const HAZARDS = new Set(['Mine', 'Propeller', 'Standing-person', 'Hook']);
+    const DEMO_FILES = ['demo_scans/sss_val_0001.jpg', 'demo_scans/sss_val_0002.jpg', 'demo_scans/sss_val_0003.jpg', 'demo_scans/sss_val_0004.jpg', 'demo_scans/sss_val_0005.jpg'];
+    let demoIdx = 0;
+
+    let ortSession = null;
     let currentData = null;
+    let lastLoadedImg = null;
     let showLabels = true;
     let selectedFile = null;
+
+    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
+
+    async function initOnnx() {
+      try {
+        ortSession = await ort.InferenceSession.create('./best.onnx', { executionProviders: ['wasm'] });
+        document.getElementById('modelStatus').textContent = 'SYSTEM ONLINE • ONNX READY';
+        const dot = document.getElementById('modelDot');
+        dot.style.background = '#3be8c8';
+        dot.style.boxShadow = '0 0 10px #3be8c8';
+      } catch (e) {
+        document.getElementById('modelStatus').textContent = 'ONNX LOAD ERROR';
+        console.error(e);
+      }
+    }
+    initOnnx();
 
     function switchTab(tabName) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
@@ -611,40 +617,144 @@
       }
     });
 
-    async function runDetection() {
+    function runUploadedScan() {
       if (!selectedFile) return;
-      const formData = new FormData();
-      formData.append('image', selectedFile);
-      formData.append('conf', document.getElementById('confSlider').value / 100);
-      const res = await fetch('/detect', { method: 'POST', body: formData });
-      const data = await res.json();
-      applyScanResult(data);
+      const reader = new FileReader();
+      reader.onload = (ev) => processImageSource(ev.target.result, selectedFile.name);
+      reader.readAsDataURL(selectedFile);
     }
 
-    async function loadDemoScan() {
-      const formData = new FormData();
-      formData.append('conf', document.getElementById('confSlider').value / 100);
-      const res = await fetch('/demo-scan', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.error) { alert(data.error); return; }
-      applyScanResult(data);
+    function loadDemoScan() {
+      const path = DEMO_FILES[demoIdx % DEMO_FILES.length];
+      demoIdx++;
+      processImageSource(path, path.split('/').pop());
     }
 
-    function applyScanResult(data) {
-      currentData = data;
-      document.getElementById('jobId').textContent = 'JOB-' + Math.random().toString(16).substring(2, 8).toUpperCase();
-      document.getElementById('metaSource').textContent = data.filename;
-      document.getElementById('metaRes').textContent = data.resolution;
+    function iou(a, b) {
+      const x1 = Math.max(a[0], b[0]), y1 = Math.max(a[1], b[1]);
+      const x2 = Math.min(a[2], b[2]), y2 = Math.min(a[3], b[3]);
+      const inter = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
+      const areaA = (a[2] - a[0]) * (a[3] - a[1]);
+      const areaB = (b[2] - b[0]) * (b[3] - b[1]);
+      return inter / (areaA + areaB - inter + 1e-6);
+    }
 
-      const img = document.getElementById('waterfallImg');
-      img.src = showLabels ? data.annotated_image : data.original_image;
-      img.style.display = 'block';
+    function nms(boxes, iouThresh = 0.45) {
+      boxes.sort((a, b) => b.conf - a.conf);
+      const kept = [];
+      for (const box of boxes) {
+        if (!kept.some(k => iou(k.bbox, box.bbox) > iouThresh)) kept.push(box);
+      }
+      return kept;
+    }
+
+    function processImageSource(src, filename) {
+      if (!ortSession) { alert('ONNX model is still loading—wait a moment until top-right says ONNX READY.'); return; }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = async () => {
+        lastLoadedImg = img;
+        const size = 320;
+        const prepCanvas = document.createElement('canvas');
+        prepCanvas.width = size; prepCanvas.height = size;
+        const pCtx = prepCanvas.getContext('2d');
+        pCtx.drawImage(img, 0, 0, size, size);
+        const imgData = pCtx.getImageData(0, 0, size, size).data;
+
+        const floatData = new Float32Array(3 * size * size);
+        for (let i = 0; i < size * size; i++) {
+          floatData[i] = imgData[i * 4] / 255.0;
+          floatData[size * size + i] = imgData[i * 4 + 1] / 255.0;
+          floatData[2 * size * size + i] = imgData[i * 4 + 2] / 255.0;
+        }
+
+        const tensor = new ort.Tensor('float32', floatData, [1, 3, size, size]);
+        const feeds = {};
+        feeds[ortSession.inputNames[0]] = tensor;
+        const outMap = await ortSession.run(feeds);
+        const output = outMap[ortSession.outputNames[0]];
+        const data = output.data;
+        const numAnchors = output.dims[2];
+        const confThresh = document.getElementById('confSlider').value / 100;
+
+        const rawBoxes = [];
+        for (let i = 0; i < numAnchors; i++) {
+          let maxScore = 0, clsId = 0;
+          for (let c = 0; c < CLASSES.length; c++) {
+            const score = data[(4 + c) * numAnchors + i];
+            if (score > maxScore) { maxScore = score; clsId = c; }
+          }
+          if (maxScore >= confThresh) {
+            const cx = data[0 * numAnchors + i] / size;
+            const cy = data[1 * numAnchors + i] / size;
+            const w = data[2 * numAnchors + i] / size;
+            const h = data[3 * numAnchors + i] / size;
+            rawBoxes.push({
+              bbox: [(cx - w / 2) * img.width, (cy - h / 2) * img.height, (cx + w / 2) * img.width, (cy + h / 2) * img.height],
+              cx, cy, w, h, conf: maxScore, clsId
+            });
+          }
+        }
+
+        const finalBoxes = nms(rawBoxes);
+        const detections = finalBoxes.map((b, idx) => {
+          const objId = 'D' + String(idx + 1).padStart(2, '0');
+          const type = CLASSES[b.clsId];
+          const isHazard = HAZARDS.has(type);
+          const status = (type === 'Mine' || type === 'Standing-person') ? 'CRITICAL' : (isHazard ? 'WARNING' : 'REVIEW');
+          return {
+            id: objId,
+            type,
+            confidence: (b.conf * 100).toFixed(1),
+            bbox: b.bbox,
+            lat: (13.0827 + (b.cy - 0.5) * 0.005).toFixed(6),
+            lon: (80.2707 + (b.cx - 0.5) * 0.005).toFixed(6),
+            range: `${(Math.abs(b.cx - 0.5) * 100).toFixed(1)} ${b.cx >= 0.5 ? 'S' : 'P'}`,
+            along_track: (b.cy * 150).toFixed(1),
+            size: `${(b.w * 25).toFixed(1)}x${(b.h * 25).toFixed(1)}`,
+            status
+          };
+        });
+
+        currentData = { filename, resolution: `${img.width} x ${img.height} px`, detections };
+        renderDashboard();
+      };
+      img.src = src;
+    }
+
+    function drawCanvas() {
+      if (!lastLoadedImg || !currentData) return;
+      const canvas = document.getElementById('sonarCanvas');
+      canvas.width = lastLoadedImg.width;
+      canvas.height = lastLoadedImg.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(lastLoadedImg, 0, 0);
+
+      if (showLabels) {
+        currentData.detections.forEach(d => {
+          const [x1, y1, x2, y2] = d.bbox;
+          const color = d.status === 'CRITICAL' ? '#ff5c5c' : (d.status === 'WARNING' ? '#f5b041' : '#3be8c8');
+          ctx.strokeStyle = color;
+          ctx.lineWidth = Math.max(2, Math.round(canvas.width / 250));
+          ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+          ctx.fillStyle = color;
+          ctx.font = `bold ${Math.max(13, Math.round(canvas.width / 38))}px JetBrains Mono, monospace`;
+          ctx.fillText(`${d.id} ${d.type} ${d.confidence}%`, x1, Math.max(16, y1 - 5));
+        });
+      }
+      canvas.style.display = 'block';
       document.getElementById('waterfallPlaceholder').style.display = 'none';
+    }
 
-      const dets = data.detections;
+    function renderDashboard() {
+      document.getElementById('jobId').textContent = 'JOB-' + Math.random().toString(16).substring(2, 8).toUpperCase();
+      document.getElementById('metaSource').textContent = currentData.filename;
+      document.getElementById('metaRes').textContent = currentData.resolution;
+      drawCanvas();
+
+      const dets = currentData.detections;
       document.getElementById('detCount').textContent = dets.length;
 
-      // Update Table
       const tbody = document.getElementById('detTableBody');
       if (!dets.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:18px;">No targets above threshold.</td></tr>';
@@ -664,27 +774,24 @@
         inspectObject(0);
       }
 
-      // Add to Scan History
       const hist = document.getElementById('historyList');
-      hist.innerHTML = `<div style="padding:6px 0; border-bottom:1px solid var(--border); color:#fff;">${data.filename} &mdash; <span style="color:var(--teal);">${dets.length} obj</span></div>` + hist.innerHTML;
+      hist.innerHTML = `<div style="padding:6px 0; border-bottom:1px solid var(--border); color:#fff;">${currentData.filename} &mdash; <span style="color:var(--teal);">${dets.length} obj</span></div>` + hist.innerHTML;
 
-      // Plot Mini Map Pins
       const pins = document.getElementById('mapPinsContainer');
       pins.innerHTML = dets.map(d => {
-        const left = 15 + ((d.lon - 80.268) / 0.006) * 70;
-        const top = 15 + ((d.lat - 13.080) / 0.006) * 70;
+        const left = 15 + ((parseFloat(d.lon) - 80.268) / 0.006) * 70;
+        const top = 15 + ((parseFloat(d.lat) - 13.080) / 0.006) * 70;
         const color = d.status === 'CRITICAL' ? '#ff5c5c' : (d.status === 'WARNING' ? '#f5b041' : '#3be8c8');
         return `<div class="map-pin" title="${d.id}: ${d.type}" style="left:${Math.min(90,Math.max(10,left))}%; top:${Math.min(85,Math.max(15,top))}%; background:${color}; color:${color};"></div>`;
       }).join('');
 
-      // Update Analytics & Full Map Tabs
       document.getElementById('analyticsContent').innerHTML = `
-        <h3 style="margin-top:0;">Active Scan Summary: ${data.filename}</h3>
+        <h3 style="margin-top:0;">Active Scan Summary: ${currentData.filename}</h3>
         <p>Total Targets Detected: <strong>${dets.length}</strong></p>
         <ul>${dets.map(d => `<li><strong>${d.id} (${d.type})</strong> — Confidence: ${d.confidence}% | Status: ${d.status}</li>`).join('')}</ul>
       `;
       document.getElementById('fullMapContent').innerHTML = `
-        <h3 style="margin-top:0;">Recovery Coordinates (${data.filename})</h3>
+        <h3 style="margin-top:0;">Recovery Coordinates (${currentData.filename})</h3>
         <ul>${dets.map(d => `<li><strong>${d.id} — ${d.type}</strong>: Lat <code>${d.lat}</code>, Lon <code>${d.lon}</code> (${d.status})</li>`).join('')}</ul>
       `;
     }
@@ -708,9 +815,8 @@
     }
 
     function toggleLabels() {
-      if (!currentData) return;
       showLabels = !showLabels;
-      document.getElementById('waterfallImg').src = showLabels ? currentData.annotated_image : currentData.original_image;
+      drawCanvas();
     }
 
     function exportData(fmt) {
